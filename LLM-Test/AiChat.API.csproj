@@ -19,9 +19,6 @@
 
   <ItemGroup>
 	  <Protobuf Include=".\proto\chat.proto" GrpcServices="Client" ProtoRoot=".\proto" />
-    <None Update="testImage.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>
