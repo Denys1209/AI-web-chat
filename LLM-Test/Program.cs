@@ -1,8 +1,10 @@
-﻿using Grpc.Net.Client;
-using Chat;
+﻿using Chat;
 using Google.Protobuf;
 using Grpc.Core;
+using Grpc.Net.Client;
+using System;
 
+var id = new Guid();
 
 AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
 
