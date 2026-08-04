@@ -2,5 +2,5 @@
 
 public class Model
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 }
