@@ -1,6 +1,6 @@
 ﻿using LLM_Test.Dtos.User;
 
-namespace LLM_Test.Services.ThreadService;
+namespace LLM_Test.Services.AuthService;
 
 public interface IAuthService
 {

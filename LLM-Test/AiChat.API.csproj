@@ -25,7 +25,6 @@
   <ItemGroup>
     <Folder Include="Services\GrpcChatService\" />
     <Folder Include="Services\ImageService\" />
-    <Folder Include="Services\AuthService\" />
   </ItemGroup>
 
 </Project>
