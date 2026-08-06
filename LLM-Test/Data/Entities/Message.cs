@@ -7,8 +7,9 @@ namespace LLM_Test.Data.Entities;
 
 public class Message : ModelWithTimeStamp
 {
-    [MaxLength(NumberConstants.MaxLengthText)]
     public required string Text { get; set; }
+
+    public string Thoughts { get; set; } = "";
 
     public required Roles Role { get; set; }
 

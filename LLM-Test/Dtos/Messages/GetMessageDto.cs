@@ -1,7 +1,7 @@
 ﻿using Chat;
 using LLM_Test.Dtos.ImageAttachmented;
 
-namespace LLM_Test.Dtos.Message;
+namespace LLM_Test.Dtos.Messages;
 
 public class GetMessageDto
 {
@@ -9,7 +9,9 @@ public class GetMessageDto
 
     public required string Text { get; init; }
 
+    public string Thoughts { get; init; } = "";
+
     public required Roles Role {  get; init; }  
 
-    public required IReadOnlyCollection<GetImageAttachmentDto> ImageAttachments { get; init; }
+    public required ICollection<GetImageAttachmentDto> ImageAttachments { get; init; }
 }

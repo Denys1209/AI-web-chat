@@ -1,4 +1,4 @@
-﻿namespace LLM_Test.Dtos.Thread;
+﻿namespace LLM_Test.Dtos.Threads;
 
 public record CreateThreadDto 
 {

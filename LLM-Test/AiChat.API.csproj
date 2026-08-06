@@ -15,16 +15,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.18" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
   </ItemGroup>
 
   <ItemGroup>
 	  <Protobuf Include=".\proto\chat.proto" GrpcServices="Client" ProtoRoot=".\proto" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Services\GrpcChatService\" />
-    <Folder Include="Services\ImageService\" />
   </ItemGroup>
 
 </Project>
