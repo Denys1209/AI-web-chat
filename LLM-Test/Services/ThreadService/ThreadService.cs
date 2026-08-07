@@ -68,7 +68,6 @@ public class ThreadService : IThreadService
     {
         await _db.Threads.Where(t => t.Id == id).ExecuteDeleteAsync(cancellationToken);
     }
-
     public async Task<GetThreadDto> GetThreadAsync(Guid id, CancellationToken cancellationToken)
     {
         var thread = await _db.Threads.FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
@@ -78,9 +77,32 @@ public class ThreadService : IThreadService
         return new GetThreadDto
         {
             Id = thread.Id,
-            Messages  = thread.Messages.ToGetDtoList(),
             Name = thread.Name,
         };
-
     }
+    public async Task<ICollection<GetThreadDto>> GetAllThreadsForUser(Guid userId, CancellationToken cancellationToken)
+    {
+        var threads = await _db.Threads.Where(t => t.User.Id == userId)
+            .Select(t => new GetThreadDto
+            {
+                Id = t.Id,
+                Name = t.Name,
+            }).ToListAsync(cancellationToken);
+
+        return threads;
+    }
+
+    public async Task<ICollection<GetMessageDto>> GetAllMessagesForThreadOrderedByCreatedAt(Guid threadId, CancellationToken cancellationToken)
+    {
+        var messages = await _db.Messages.Where(m => m.Thread.Id == threadId)
+            .OrderBy(m => m.CreatedAt)
+            .Select(m => m.ToGetDto()).ToListAsync(cancellationToken);
+
+        return messages;
+    }
+
+    
+
+    
+
 }

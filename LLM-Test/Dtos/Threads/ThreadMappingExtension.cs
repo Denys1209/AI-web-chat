@@ -11,7 +11,6 @@ public static class ThreadMappingExtension
         return new GetThreadDto()
         {
             Id = thread.Id,
-            Messages = thread.Messages.ToGetDtoList(),
             Name = thread.Name,
         };
     }

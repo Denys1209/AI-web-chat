@@ -19,14 +19,7 @@ public static class MessageMappingExtensions
 
     public static ICollection<GetMessageDto> ToGetDtoList(this ICollection<Message> messages) 
     {
-
-        List<GetMessageDto> dtos = new List<GetMessageDto>();
-
-        foreach (var message in messages) {
-            dtos.Add(ToGetDto(message));
-        }
-
-        return dtos;
+        return messages.Select(message => message.ToGetDto()).ToList();
 
     }
 }

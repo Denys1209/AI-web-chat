@@ -16,5 +16,10 @@ public interface IThreadService
     public Task AddMessageToThreadAsync(Guid ThreadId, CreateMessageDto createMessageDto);
 
 
+    public Task<ICollection<GetThreadDto>> GetAllThreadsForUser(Guid userId, CancellationToken cancellationToken);
+
+    public Task<ICollection<GetMessageDto>> GetAllMessagesForThreadOrderedByCreatedAt(Guid threadId, CancellationToken cancellationToken);
+
+
 
 }
