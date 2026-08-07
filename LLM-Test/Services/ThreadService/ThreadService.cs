@@ -3,6 +3,7 @@ using LLM_Test.Data.Entities;
 using LLM_Test.Dtos.Messages;
 using LLM_Test.Dtos.Threads;
 using LLM_Test.Services.GrpcChatService;
+using LLM_Test.Services.ImageAttachmentServices;
 using Microsoft.EntityFrameworkCore;
 using Thread = LLM_Test.Data.Entities.Thread;
 
@@ -11,22 +12,24 @@ namespace LLM_Test.Services.ThreadService;
 public class ThreadService : IThreadService
 {
     private readonly AppDbContext _db;
+    private readonly IImageAttachmentService _imageAttachmentService;
 
 
-    public ThreadService(AppDbContext db)
+    public ThreadService(AppDbContext db, IImageAttachmentService imageAttachmentService)
     {
         _db = db;
+        _imageAttachmentService = imageAttachmentService;
     }
 
-    public async Task AddMessageToThreadAsync(Guid ThreadId, CreateMessageDto createMessageDto)
+    public async Task AddMessageToThreadAsync(Guid ThreadId, CreateMessageDto createMessageDto, CancellationToken cancellationToken)
     {
-        var thread = await _db.Threads.FirstOrDefaultAsync(t => t.Id == ThreadId);
+        var thread = await _db.Threads.FirstOrDefaultAsync(t => t.Id == ThreadId, cancellationToken);
 
         if (thread is null)
             throw new InvalidOperationException($"Thread with this Id doesn't exist {ThreadId}");
 
 
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == createMessageDto.UserId);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == createMessageDto.UserId, cancellationToken);
 
         var message = new Message
         {
@@ -35,6 +38,14 @@ public class ThreadService : IThreadService
             Role = createMessageDto.Role,
             Thread = thread,
         };
+
+
+        foreach (var imageAttachmentDto in createMessageDto.ImageAttachments)
+        {
+            var imageAttachment = await _imageAttachmentService.CreateAsync(imageAttachmentDto, message, cancellationToken);
+            message.ImageAttacheds.Add(imageAttachment);
+        }
+
 
         await _db.Messages.AddAsync(message);
         await _db.SaveChangesAsync();

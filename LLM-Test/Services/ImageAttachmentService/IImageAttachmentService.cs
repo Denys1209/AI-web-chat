@@ -1,7 +1,7 @@
 ﻿using LLM_Test.Data.Entities;
 using LLM_Test.Dtos.ImageAttachmented;
 
-namespace LLM_Test.Services.ImageAttachmentService;
+namespace LLM_Test.Services.ImageAttachmentServices;
 
 public interface IImageAttachmentService
 {

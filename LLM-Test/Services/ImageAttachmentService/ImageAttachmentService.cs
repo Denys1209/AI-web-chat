@@ -2,7 +2,7 @@
 using LLM_Test.Dtos.ImageAttachmented;
 using LLM_Test.Services.ImageServices;
 
-namespace LLM_Test.Services.ImageAttachmentService;
+namespace LLM_Test.Services.ImageAttachmentServices;
 
 public class ImageAttachmentService : IImageAttachmentService
 {
