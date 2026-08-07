@@ -9,7 +9,7 @@ namespace LLM_Test.Services.GrpcChatService;
 
 public interface IGrpcChatService
 {
-    public Message MakeRequest(Thread thread, IReadOnlyCollection<Message> history, Message userMessage);
+    public Task<Message> MakeRequestAsync(Thread thread, IReadOnlyCollection<Message> history, Message userMessage, CancellationToken cancellationToken);
 
     public  IAsyncEnumerable<string> MakeRequestReturnTokenByTokenAsync(IReadOnlyCollection<Message> history, Message userMessage, CancellationToken cancellationToken);
 }

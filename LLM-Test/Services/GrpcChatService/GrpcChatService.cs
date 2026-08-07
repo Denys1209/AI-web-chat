@@ -45,14 +45,15 @@ public class GrpcChatService : IGrpcChatService
         return proto;
     }
 
-    public Message MakeRequest(Thread thread, IReadOnlyCollection<Message> history, Message userMessage)
+    public async Task<Message> MakeRequestAsync(Thread thread, IReadOnlyCollection<Message> history, Message userMessage, CancellationToken cancellationToken)
     {
         var request = new Request
         {
             History = BuildHistory(history.ToList()),
             UserMessage = MapMessage(userMessage)
         };
-        var response = _client.MakeRequest(request);
+
+        var response = await _client.MakeRequestAsync(request, cancellationToken:cancellationToken);
         var message = new Message
         {
             Text = response.Answer,
@@ -60,6 +61,7 @@ public class GrpcChatService : IGrpcChatService
             Role = Roles.Assistent,
             Thread = thread
         };
+
         return message;
 
     }
