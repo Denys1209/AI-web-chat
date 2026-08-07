@@ -1,4 +1,5 @@
 ﻿using LLM_Test.Data;
+using LLM_Test.Data.Entities;
 using LLM_Test.Dtos.Messages;
 using LLM_Test.Dtos.Threads;
 using LLM_Test.Services.GrpcChatService;
@@ -11,17 +12,34 @@ public class ThreadService : IThreadService
 {
     private readonly AppDbContext _db;
 
-    private readonly IGrpcChatService _chatService;
 
-    public ThreadService(AppDbContext db, IGrpcChatService grpcChatService)
+    public ThreadService(AppDbContext db)
     {
         _db = db;
-        _chatService = grpcChatService;
     }
 
-    public Task<GetMessageDto> AddMessageToThreadAsync(Guid ThreadId, CreateMessageDto createMessageDto)
+    public async Task AddMessageToThreadAsync(Guid ThreadId, CreateMessageDto createMessageDto)
     {
-        throw new NotImplementedException();
+        var thread = await _db.Threads.FirstOrDefaultAsync(t => t.Id == ThreadId);
+
+        if (thread is null)
+            throw new InvalidOperationException($"Thread with this Id doesn't exist {ThreadId}");
+
+
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == createMessageDto.UserId);
+
+        var message = new Message
+        {
+            Text = createMessageDto.Text,
+            Thoughts = createMessageDto.Thoughts,
+            Role = createMessageDto.Role,
+            Thread = thread,
+        };
+
+        await _db.Messages.AddAsync(message);
+        await _db.SaveChangesAsync();
+
+
     }
 
     public async Task<Guid> CreateThreadAsync(CreateThreadDto createThreadDto, CancellationToken cancellationToken)
@@ -46,9 +64,9 @@ public class ThreadService : IThreadService
         return thread.Id;
     }
 
-    public Task DeleteThreadAsync(Guid id, CancellationToken cancellationToken)
+    public async Task DeleteThreadAsync(Guid id, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await _db.Threads.Where(t => t.Id == id).ExecuteDeleteAsync(cancellationToken);
     }
 
     public async Task<GetThreadDto> GetThreadAsync(Guid id, CancellationToken cancellationToken)
@@ -60,7 +78,7 @@ public class ThreadService : IThreadService
         return new GetThreadDto
         {
             Id = thread.Id,
-            Messages  = new List<GetMessageDto>(),
+            Messages  = thread.Messages.ToGetDtoList(),
             Name = thread.Name,
         };
 
