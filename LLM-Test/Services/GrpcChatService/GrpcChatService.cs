@@ -59,7 +59,7 @@ public class GrpcChatService : IGrpcChatService
         {
             Text = response.Answer,
             Thoughts = response.Thoughts,
-            Role = Roles.Assistent,
+            Role = Roles.Assistant,
             Thread = thread
         };
 
