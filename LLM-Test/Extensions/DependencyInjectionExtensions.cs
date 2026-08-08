@@ -7,15 +7,9 @@ using LLM_Test.Services.ImageAttachmentServices;
 using LLM_Test.Services.ImageServices;
 using LLM_Test.Services.ThreadService;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LLM_Test.Extensions;
 public static class DependencyInjectionExtensions
@@ -36,10 +30,10 @@ public static class DependencyInjectionExtensions
                 .UseLazyLoadingProxies();
         });
 
-        using var channel = GrpcChannel.ForAddress("http://localhost:50051");
+        var channel = GrpcChannel.ForAddress("http://localhost:50051");
         var client = new Gemma4Server.Gemma4ServerClient(channel);
 
-        services.AddKeyedSingleton<Gemma4Server.Gemma4ServerClient>(client);
+        services.AddSingleton<Gemma4Server.Gemma4ServerClient>(client);
 
         services.AddScoped<IImageStorageService, LocalImageStorageService>();
         services.AddScoped<IImageAttachmentService, ImageAttachmentService>();
