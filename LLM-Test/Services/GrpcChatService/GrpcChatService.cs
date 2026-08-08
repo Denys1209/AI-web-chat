@@ -4,6 +4,7 @@ using Grpc.Core;
 using Message = LLM_Test.Data.Entities.Message;
 using GrpcMessage = Chat.Message;
 using Thread = LLM_Test.Data.Entities.Thread;
+using System.Runtime.CompilerServices;
 
 namespace LLM_Test.Services.GrpcChatService;
 
@@ -66,8 +67,24 @@ public class GrpcChatService : IGrpcChatService
 
     }
 
-    public IAsyncEnumerable<string> MakeRequestReturnTokenByTokenAsync(IReadOnlyCollection<Message> history, Message userMessage, CancellationToken cancellationToken)
+    public async IAsyncEnumerable<string> MakeRequestReturnTokenByTokenAsync(
+        IReadOnlyCollection<Message> history,
+        Message userMessage,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var request = new Request
+        {
+            History = BuildHistory(history.ToList()),
+            UserMessage = MapMessage(userMessage)
+        };
+
+        using var call = _client.MakeRequestStreamBackTokenByToken(request, cancellationToken: cancellationToken);
+
+        await foreach (var response in call.ResponseStream.ReadAllAsync(cancellationToken))
+        {
+            yield return response.Answer;
+        }
+
+
     }
 }

@@ -4,7 +4,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>39ca12b9-c4bb-4c4c-8a7d-f046330fcae2</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>GrpcPythonServer.py</StartupFile>
+    <StartupFile>
+    </StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,7 +24,7 @@
   <ItemGroup>
     <Compile Include="chat_pb2.py" />
     <Compile Include="chat_pb2_grpc.py" />
-    <Compile Include="GrpcPythonServer.py" />
+    <Compile Include="server.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
