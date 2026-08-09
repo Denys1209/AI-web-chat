@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.AspNetCore.Hosting;
+
 namespace LLM_Test.Services.ImageServices;
 
 public class LocalImageStorageService : IImageStorageService
@@ -12,11 +14,11 @@ public class LocalImageStorageService : IImageStorageService
         { "image/webp", ".webp" }
     };
 
-    public LocalImageStorageService(string rootPath)
+    public LocalImageStorageService(IWebHostEnvironment env)
     {
-        _rootPath = rootPath;
+        _rootPath = Path.Combine(env.ContentRootPath, "Uploads", "Images");
+        Directory.CreateDirectory(_rootPath);
     }
-
     public Task DeleteAsync(string path, CancellationToken cancellationToken)
     {
         var fullPath = Path.Combine(_rootPath, path);

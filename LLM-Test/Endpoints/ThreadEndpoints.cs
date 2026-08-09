@@ -67,7 +67,7 @@ public static class ThreadEndpoints
 
         group.MapPost("/{threadId:guid}/messages", async (Guid threadId, CreateMessageDto request, ClaimsPrincipal user, IThreadService threadService, IGrpcChatService chatService, CancellationToken cancellationToken) =>
         {
-            if (!await threadService.CheckIfTheThreadBelongsToUser(threadId, user.GetUserId(), cancellationToken) && request.UserId == user.GetUserId())
+            if (!await threadService.CheckIfTheThreadBelongsToUser(threadId, user.GetUserId(), cancellationToken) || request.UserId != user.GetUserId())
             {
                 return Results.Forbid();
             }
@@ -78,6 +78,17 @@ public static class ThreadEndpoints
                 var (thread, history, userMessage) = await threadService.AddMessageToThreadAsync(threadId, request, cancellationToken);
 
                 var responseMessage = await chatService.MakeRequestAsync(thread, history.ToImmutableList(), userMessage, cancellationToken);
+
+                var responseMessageDto = responseMessage.ToGetDto();
+
+                await threadService.AddMessageToThreadAsync(threadId, new CreateMessageDto()
+                {
+                    ImageAttachments = [],
+                    Role = responseMessage.Role,
+                    Text = responseMessage.Text,
+                    Thoughts = responseMessage.Thoughts,
+                    UserId = user.GetUserId()
+                }, cancellationToken);
 
                 return Results.Ok(responseMessage.ToGetDto());
             }
