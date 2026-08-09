@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System;
 
@@ -47,6 +48,18 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+var app = builder.Build();
+
+
+app.MapApplicationEndpoints();
+
+//if (app.Environment.IsDevelopment())
+//{
+
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
+app.Run();
 
 
 
