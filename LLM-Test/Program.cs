@@ -3,8 +3,11 @@ using Google.Protobuf;
 using Grpc.Core;
 using Grpc.Net.Client;
 using LLM_Test.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using System;
 
 
@@ -23,72 +26,26 @@ builder.Configuration
 builder.Services.AddApplication(builder.Configuration);
 
 
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(
+        options => 
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                ValidAudience = builder.Configuration["Jwt:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+            };
+        }
+    
+    );
 
-
-
-
-
-
-
-//var id = new Guid();
-
-
-//using var channel = GrpcChannel.ForAddress("http://localhost:50051");
-//var client = new Gemma4Server.Gemma4ServerClient(channel);
-
-//var history = new History();
-//history.Messages.Add(new Message { Text = "You are a helpful assistant.", Role = Roles.System });
-
-
-//var imageBytes = await File.ReadAllBytesAsync("testImage.jpg");
-
-//var userMessage = new Message {
-//    Text = "Describe the image",
-//    Role = Roles.User
-//};
-
-//userMessage.ImageAttachment.Add(new ImageAttachment
-//{
-//    Data = ByteString.CopyFrom(imageBytes),
-//    MimeType = "image/jpeg"
-//});
-
-//var request = new Request { History = history, UserMessage = userMessage };
-
-
-//Console.WriteLine("First Request");
-
-//try
-//{
-//    var response = client.MakeRequest(request);
-//    Console.WriteLine($"Thoughts: {response.Thoughts}");
-
-//    Console.WriteLine($"answer: {response.Answer}");
-//}
-//catch (Grpc.Core.RpcException ex)
-//{
-//    Console.WriteLine($"gRPC call failed: {ex.Status}");
-//}
-
-
-//Console.WriteLine("Second Request");
-
-//try
-//{
-//    using var call = client.MakeRequestStreamBackTokenByToken(request);
-//    await foreach (var chunk in call.ResponseStream.ReadAllAsync()) 
-//    {
-//        Console.Write(chunk.Answer);
-//    }
-//}
-//catch (Grpc.Core.RpcException ex)
-//{
-//    Console.WriteLine($"gRPC call failed: {ex.Status}");
-//}
-
-
-
-
+builder.Services.AddAuthorization();
 
 
 

@@ -21,7 +21,7 @@ public class ThreadService : IThreadService
         _imageAttachmentService = imageAttachmentService;
     }
 
-    public async Task AddMessageToThreadAsync(Guid ThreadId, CreateMessageDto createMessageDto, CancellationToken cancellationToken)
+    public async Task<(Thread thread, ICollection<Message> history, Message userMessage)> AddMessageToThreadAsync(Guid ThreadId, CreateMessageDto createMessageDto, CancellationToken cancellationToken)
     {
         var thread = await _db.Threads.FirstOrDefaultAsync(t => t.Id == ThreadId, cancellationToken);
 
@@ -30,6 +30,12 @@ public class ThreadService : IThreadService
 
 
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == createMessageDto.UserId, cancellationToken);
+
+        if (user is null)
+            throw new InvalidOperationException($"User with this Id doesn't exist {createMessageDto.UserId}");
+
+        var history = thread.Messages.Where(m => m.Thread.Id == ThreadId)
+            .OrderBy(m => m.CreatedAt).ToList();
 
         var message = new Message
         {
@@ -49,6 +55,10 @@ public class ThreadService : IThreadService
 
         await _db.Messages.AddAsync(message);
         await _db.SaveChangesAsync();
+
+        return (thread, history, message);
+
+
 
 
     }
@@ -79,7 +89,7 @@ public class ThreadService : IThreadService
     {
         await _db.Threads.Where(t => t.Id == id).ExecuteDeleteAsync(cancellationToken);
     }
-    public async Task<GetThreadDto> GetThreadAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<GetThreadDto> GetThreadDtoAsync(Guid id, CancellationToken cancellationToken)
     {
         var thread = await _db.Threads.FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
         if (thread is null)
@@ -112,8 +122,13 @@ public class ThreadService : IThreadService
         return messages;
     }
 
-    
+    public async Task<bool> CheckIfTheThreadBelongsToUser(Guid threadId, Guid userId, CancellationToken cancellationToken)
+    {
+        return await _db.Threads.AnyAsync(t => t.Id == threadId && t.User.Id == userId, cancellationToken);
+    }
 
-    
-
+    public async Task<Thread> GetThreadAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await _db.Threads.FirstOrDefaultAsync(t => t.Id == id, cancellationToken) ?? throw new Exception($"Threads with this id: {id} wasn't found");
+    }
 }
