@@ -7,9 +7,11 @@ using LLM_Test.Services.ImageAttachmentServices;
 using LLM_Test.Services.ImageServices;
 using LLM_Test.Services.ThreadService;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using LLM_Test.Data.Entities;
 
 namespace LLM_Test.Extensions;
 public static class DependencyInjectionExtensions
@@ -34,6 +36,8 @@ public static class DependencyInjectionExtensions
         var client = new Gemma4Server.Gemma4ServerClient(channel);
 
         services.AddSingleton<Gemma4Server.Gemma4ServerClient>(client);
+
+        services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
         services.AddScoped<IImageStorageService, LocalImageStorageService>();
         services.AddScoped<IImageAttachmentService, ImageAttachmentService>();
