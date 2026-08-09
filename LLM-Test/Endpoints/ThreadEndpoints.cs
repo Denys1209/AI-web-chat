@@ -74,9 +74,7 @@ public static class ThreadEndpoints
 
                 var responseMessage = await chatService.MakeRequestAsync(thread, history.ToImmutableList(), userMessage, cancellationToken);
 
-                var responseMessageDto = responseMessage.ToGetDto();
-
-                await threadService.AddMessageToThreadAsync(threadId, new CreateMessageDto()
+                var (newThread, newHistory, newMessage) = await threadService.AddMessageToThreadAsync(threadId, new CreateMessageDto()
                 {
                     ImageAttachments = [],
                     Role = responseMessage.Role,
@@ -85,7 +83,7 @@ public static class ThreadEndpoints
                     UserId = user.GetUserId()
                 }, cancellationToken);
 
-                return Results.Ok(responseMessage.ToGetDto());
+                return Results.Ok(newMessage.ToGetDto());
             }
             catch (Exception ex)
             {
