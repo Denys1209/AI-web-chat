@@ -2,7 +2,6 @@
 using LLM_Test.Data.Entities;
 using LLM_Test.Dtos.Messages;
 using LLM_Test.Dtos.Threads;
-using LLM_Test.Services.GrpcChatService;
 using LLM_Test.Services.ImageAttachmentServices;
 using Microsoft.EntityFrameworkCore;
 using Thread = LLM_Test.Data.Entities.Thread;
@@ -34,7 +33,7 @@ public class ThreadService : IThreadService
         if (user is null)
             throw new InvalidOperationException($"User with this Id doesn't exist {createMessageDto.UserId}");
 
-        var history = thread.Messages.Where(m => m.Thread.Id == ThreadId)
+        var history = thread.Messages
             .OrderBy(m => m.CreatedAt).ToList();
 
         var message = new Message
@@ -104,11 +103,7 @@ public class ThreadService : IThreadService
     public async Task<ICollection<GetThreadDto>> GetAllThreadsForUser(Guid userId, CancellationToken cancellationToken)
     {
         var threads = await _db.Threads.Where(t => t.User.Id == userId)
-            .Select(t => new GetThreadDto
-            {
-                Id = t.Id,
-                Name = t.Name,
-            }).ToListAsync(cancellationToken);
+            .Select(t => t.ToGetDto()).ToListAsync(cancellationToken);
 
         return threads;
     }

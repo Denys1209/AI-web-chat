@@ -1,18 +1,13 @@
-﻿using Chat;
-using LLM_Test.Data;
-using LLM_Test.Dtos.Messages;
+﻿using LLM_Test.Dtos.Messages;
 using LLM_Test.Dtos.Threads;
 using LLM_Test.Extensions;
 using LLM_Test.Services.GrpcChatService;
 using LLM_Test.Services.ThreadService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 using System.Collections.Immutable;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace LLM_Test.Endpoints;
 

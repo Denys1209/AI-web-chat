@@ -1,7 +1,4 @@
-﻿
-using Chat;
-using Grpc.Core;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using Message = LLM_Test.Data.Entities.Message;
 using Thread = LLM_Test.Data.Entities.Thread;
 

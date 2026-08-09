@@ -5,30 +5,33 @@ using Message = LLM_Test.Data.Entities.Message;
 using GrpcMessage = Chat.Message;
 using Thread = LLM_Test.Data.Entities.Thread;
 using System.Runtime.CompilerServices;
+using LLM_Test.Services.ImageServices;
 
 namespace LLM_Test.Services.GrpcChatService;
 
 public class GrpcChatService : IGrpcChatService
 {
     private  Gemma4Server.Gemma4ServerClient _client;
+    private  IImageStorageService _imageStorageService;
 
 
-    public GrpcChatService(Gemma4Server.Gemma4ServerClient client)
+    public GrpcChatService(Gemma4Server.Gemma4ServerClient client, IImageStorageService imageStorageService)
     {
         _client = client;
+        _imageStorageService = imageStorageService;
     }
 
-    private History BuildHistory(IReadOnlyList<Message> messages)
+    private async Task<History> BuildHistoryAsync(IReadOnlyList<Message> messages, CancellationToken cancellationToken )
     {
         var history = new History();
         foreach (var m in messages)
-            history.Messages.Add(MapMessage(m));
+            history.Messages.Add( await MapMessageAsync(m, cancellationToken));
         return history;
     }
 
-    private GrpcMessage MapMessage(Message m)
+    private async Task<GrpcMessage> MapMessageAsync(Message m, CancellationToken cancellationToken)
     {
-        var proto = new GrpcMessage
+        var protoMessage = new GrpcMessage
         {
             Text = m.Text,
             Role = m.Role
@@ -36,22 +39,22 @@ public class GrpcChatService : IGrpcChatService
 
         foreach (var img in m.ImageAttacheds)
         {
-            proto.ImageAttachment.Add(new Chat.ImageAttachment
+            protoMessage.ImageAttachment.Add(new Chat.ImageAttachment
             {
-                Data = Google.Protobuf.ByteString.CopyFrom(File.ReadAllBytes(img.Path)),
+                Data = Google.Protobuf.ByteString.CopyFrom(await _imageStorageService.ReadAsync(img.Path, cancellationToken)),
                 MimeType = img.Type
             });
         }
 
-        return proto;
+        return protoMessage;
     }
 
     public async Task<Message> MakeRequestAsync(Thread thread, IReadOnlyCollection<Message> history, Message userMessage, CancellationToken cancellationToken)
     {
         var request = new Request
         {
-            History = BuildHistory(history.ToList()),
-            UserMessage = MapMessage(userMessage)
+            History = await BuildHistoryAsync(history.ToList(), cancellationToken),
+            UserMessage = await MapMessageAsync(userMessage, cancellationToken)
         };
 
         var response = await _client.MakeRequestAsync(request, cancellationToken:cancellationToken);
@@ -74,8 +77,8 @@ public class GrpcChatService : IGrpcChatService
     {
         var request = new Request
         {
-            History = BuildHistory(history.ToList()),
-            UserMessage = MapMessage(userMessage)
+            History = await BuildHistoryAsync(history.ToList(), cancellationToken),
+            UserMessage = await MapMessageAsync(userMessage, cancellationToken)
         };
 
         using var call = _client.MakeRequestStreamBackTokenByToken(request, cancellationToken: cancellationToken);
