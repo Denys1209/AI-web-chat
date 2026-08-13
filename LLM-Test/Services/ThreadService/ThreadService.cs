@@ -126,4 +126,10 @@ public class ThreadService : IThreadService
     {
         return await _db.Threads.FirstOrDefaultAsync(t => t.Id == id, cancellationToken) ?? throw new Exception($"Threads with this id: {id} wasn't found");
     }
+
+    public async Task SaveMessageAsync(Message message, CancellationToken cancellationToken)
+    {
+        _db.Messages.Update(message);
+        await _db.SaveChangesAsync(cancellationToken);
+    }
 }

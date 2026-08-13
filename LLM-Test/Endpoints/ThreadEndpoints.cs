@@ -1,4 +1,5 @@
-﻿using LLM_Test.Dtos.Messages;
+﻿using Chat;
+using LLM_Test.Dtos.Messages;
 using LLM_Test.Dtos.Threads;
 using LLM_Test.Extensions;
 using LLM_Test.Services.GrpcChatService;
@@ -7,7 +8,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks.Dataflow;
 
 namespace LLM_Test.Endpoints;
 
@@ -94,7 +98,60 @@ public static class ThreadEndpoints
 
         });
 
+        group.MapPost("/{threadId:guid}/messages/stream",
+            async (
+                Guid threadId,
+                CreateMessageDto request,
+                ClaimsPrincipal user,
+                IThreadService threadService,
+                IGrpcChatService chatService,
+                CancellationToken cancellationToken
+            ) =>
+        {
+            if (!await threadService.CheckIfTheThreadBelongsToUser(threadId, user.GetUserId(), cancellationToken) || request.UserId != user.GetUserId())
+                return Results.Forbid();
+
+            var (thread, history, userMessage) = await threadService.AddMessageToThreadAsync(threadId, request, cancellationToken);
+
+            async IAsyncEnumerable<string> StreamAndPersist([EnumeratorCancellation] CancellationToken cancellation)
+            {
+                var fullReply = new StringBuilder();
+
+                try
+                {
+                    await foreach (var token in chatService.MakeRequestReturnTokenByTokenAsync(history.ToImmutableList(), userMessage, cancellationToken))
+                    {
+                        fullReply.Append(token);
+                        yield return token;
+                    }
+                }
+                finally 
+                {
+                    if (fullReply.Length > 0) 
+                    {
+                        var assistantMessage = new Data.Entities.Message
+                        {
+                           Text = fullReply.ToString(),
+                           Role = Roles.Assistant,
+                           Thread = thread,
+                        };
+
+                        {
+                        };
+
+                        await threadService.SaveMessageAsync(assistantMessage, CancellationToken.None);
+
+                    }
+                }
+            }
+
+            return TypedResults.Se(StreamAndPersist(cancellationToken));
+
+        });
+
     }
+
+   
 }
 
 public record CreateThreadRequest(string Name);
