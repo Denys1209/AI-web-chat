@@ -2,7 +2,7 @@
 
 public class ModelWithTimeStamp : Model
 {
-    public DateTime CreatedAt { get; } = DateTime.Now;
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
 
-    public DateTime UpdatedAt { get; set; } = DateTime.Now;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

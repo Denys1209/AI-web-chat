@@ -7,7 +7,7 @@ enum Roles {
     UNSPECIFIED = 0;
     SYSTEM = 1;
     USER = 2;
-    ASSISTENT = 3;
+    ASSISTANT = 3;
 }
 
 message ImageAttachment {
