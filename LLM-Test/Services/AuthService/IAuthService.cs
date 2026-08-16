@@ -1,4 +1,4 @@
-﻿using LLM_Test.Dtos.User;
+﻿using LLM_Test.Dtos.Users;
 
 namespace LLM_Test.Services.AuthService;
 

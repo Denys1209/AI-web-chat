@@ -1,6 +1,6 @@
 ﻿using LLM_Test.Data;
 using LLM_Test.Data.Entities;
-using LLM_Test.Dtos.User;
+using LLM_Test.Dtos.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -61,7 +61,7 @@ public class AuthSerice : IAuthService
         var alreadyExists = await _db.Users.AnyAsync(u => u.Gmail == registerUserDto.Gmail, cancellationToken);
 
         if (alreadyExists)
-            throw new InvalidOperationException("User with this Gmail already exists");
+            throw new InvalidOperationException("Users with this Gmail already exists");
 
         var user = new User
         {

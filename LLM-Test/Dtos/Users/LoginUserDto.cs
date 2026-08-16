@@ -1,4 +1,4 @@
-﻿namespace LLM_Test.Dtos.User;
+﻿namespace LLM_Test.Dtos.Users;
 
 public record LoginUserDto
 {

@@ -1,15 +1,17 @@
 ﻿using LLM_Test.Constants;
 using System.ComponentModel.DataAnnotations;
 
-namespace LLM_Test.Dtos.User;
+namespace LLM_Test.Dtos.Users;
 
-public record RegisterUserDto
+public record AuthResponse
 {
-    [MaxLength(NumberConstants.MaxLengthDisplayedName)]
     public required string DisplayedName { get; init; }
 
-    [EmailAddress]
     public required string Gmail { get; init; }
 
-    public required string Password { get; init; }
+    public required string Token { get; init; }
+
+    public required Guid Id { get; init; }
+
+
 }
