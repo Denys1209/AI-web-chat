@@ -11,13 +11,16 @@ using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks.Dataflow;
+
+using Message = LLM_Test.Data.Entities.Message;
 
 namespace LLM_Test.Endpoints;
 
 public static class ThreadEndpoints
 {
-    public static void MapThreadEndpoints(this IEndpointRouteBuilder app) 
+    public static void MapThreadEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/threads").RequireAuthorization();
 
@@ -42,7 +45,7 @@ public static class ThreadEndpoints
                 return Results.Forbid();
             }
 
-           
+
             var threadMessages = await threadService.GetAllMessagesForThreadOrderedByCreatedAt(threadId, cancellationToken);
 
             return Results.Ok(threadMessages);
@@ -105,16 +108,20 @@ public static class ThreadEndpoints
                 ClaimsPrincipal user,
                 IThreadService threadService,
                 IGrpcChatService chatService,
+                HttpContext httpContext,
                 CancellationToken cancellationToken
             ) =>
-        {
-            if (!await threadService.CheckIfTheThreadBelongsToUser(threadId, user.GetUserId(), cancellationToken) || request.UserId != user.GetUserId())
-                return Results.Forbid();
-
-            var (thread, history, userMessage) = await threadService.AddMessageToThreadAsync(threadId, request, cancellationToken);
-
-            async IAsyncEnumerable<string> StreamAndPersist([EnumeratorCancellation] CancellationToken cancellation)
             {
+                if (!await threadService.CheckIfTheThreadBelongsToUser(threadId, user.GetUserId(), cancellationToken) || request.UserId != user.GetUserId())
+                    return Results.Forbid();
+
+                var (thread, history, userMessage) = await threadService.AddMessageToThreadAsync(threadId, request, cancellationToken);
+
+
+                httpContext.Response.Headers.ContentType = "text/event-stream";
+                httpContext.Response.Headers.CacheControl = "no-cache";
+                httpContext.Response.Headers.Connection = "keep-alive";
+
                 var fullReply = new StringBuilder();
 
                 try
@@ -122,36 +129,35 @@ public static class ThreadEndpoints
                     await foreach (var token in chatService.MakeRequestReturnTokenByTokenAsync(history.ToImmutableList(), userMessage, cancellationToken))
                     {
                         fullReply.Append(token);
-                        yield return token;
+                        var frame = JsonSerializer.Serialize(new { token });
+                        await httpContext.Response.WriteAsync($"data: {frame}\n\n", cancellationToken);
+                        await httpContext.Response.Body.FlushAsync(cancellationToken);
+
                     }
+
                 }
-                finally 
+                finally
                 {
                     if (fullReply.Length > 0) 
                     {
-                        var assistantMessage = new Data.Entities.Message
+                        var assistantMessage = new Message 
                         {
-                           Text = fullReply.ToString(),
-                           Role = Roles.Assistant,
-                           Thread = thread,
+                            Text = fullReply.ToString(),
+                            Role = Roles.Assistant,
+                            Thread = thread,
                         };
-
-                        {
-                        };
-
-                        await threadService.SaveMessageAsync(assistantMessage, CancellationToken.None);
-
+                        await threadService.SaveMessageAsync(assistantMessage, cancellationToken);
                     }
+
                 }
-            }
 
-            return TypedResults.Se(StreamAndPersist(cancellationToken));
+                return Results.Empty;
 
-        });
+            });
 
     }
 
-   
+
 }
 
 public record CreateThreadRequest(string Name);
