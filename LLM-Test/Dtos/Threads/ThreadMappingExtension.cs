@@ -1,0 +1,15 @@
+﻿using Thread = LLM_Test.Data.Entities.Thread;
+
+namespace LLM_Test.Dtos.Threads;
+
+public static class ThreadMappingExtension
+{
+    public static GetThreadDto ToGetDto(this Thread thread) 
+    {
+        return new GetThreadDto()
+        {
+            Id = thread.Id,
+            Name = thread.Name,
+        };
+    }
+}

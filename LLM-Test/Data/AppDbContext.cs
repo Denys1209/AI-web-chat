@@ -10,7 +10,7 @@ public class AppDbContext : DbContext
     public DbSet<User> Users { get; set; }
 
     public DbSet<Thread> Threads { get; set; }
-    public DbSet<Message> messages { get; set; }
+    public DbSet<Message> Messages { get; set; }
 
     public DbSet<ImageAttached> ImageAttacheds { get; set; }
 
