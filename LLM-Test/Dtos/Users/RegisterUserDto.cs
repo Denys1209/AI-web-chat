@@ -1,9 +1,12 @@
-﻿namespace LLM_Test.Dtos.User;
+﻿using LLM_Test.Constants;
+using System.ComponentModel.DataAnnotations;
+
+namespace LLM_Test.Dtos.User;
 
 public record RegisterUserDto
 {
-    public required string DisplayedName { get; init; }
-    public required string Gmail { get; init; }
-    public required string Password { get; init; }
+    [Required, MaxLength(NumberConstants.MaxLengthDisplayedName)] public required string DisplayedName { get; init; }
+    [Required, EmailAddress] public required string Gmail { get; init; }
+    [Required] public required string Password { get; init; }
 
 }

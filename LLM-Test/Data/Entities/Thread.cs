@@ -6,7 +6,7 @@ namespace LLM_Test.Data.Entities;
 
 public class Thread : ModelWithTimeStamp
 {
-    [MaxLength(NumberConstants.MaxLengthTheadName)]
+    [MaxLength(NumberConstants.MaxLengthThreadName)]
     public required string Name { get; set; }
 
     public virtual ICollection<Message> Messages { get; set; } = new List<Message>();

@@ -1,8 +1,10 @@
-﻿namespace LLM_Test.Dtos.User;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace LLM_Test.Dtos.User;
 
 public record LoginUserDto
 {
-    public required string Gmail { get; init; }
+    [Required, EmailAddress] public required string Gmail { get; init; }
 
-    public required string Password { get; init; }
+    [Required] public required string Password { get; init; }
 }

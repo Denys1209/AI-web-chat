@@ -1,4 +1,5 @@
 ﻿using Chat;
+using LLM_Test.Constants;
 using LLM_Test.Dtos.Messages;
 using LLM_Test.Dtos.Threads;
 using LLM_Test.Extensions;
@@ -7,7 +8,9 @@ using LLM_Test.Services.ThreadService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Constraints;
 using System.Collections.Immutable;
+using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
@@ -36,7 +39,8 @@ public static class ThreadEndpoints
 
             return Results.Created($"/api/threads/{id}", new { Id = id });
 
-        });
+        })
+        .WithValidation<CreateThreadRequest>();
 
         group.MapGet("/{threadId:guid}", async (Guid threadId, ClaimsPrincipal user, IThreadService threadService, CancellationToken cancellationToken) =>
         {
@@ -99,7 +103,7 @@ public static class ThreadEndpoints
             }
 
 
-        });
+        }).WithValidation<CreateMessageDto>();;
 
         group.MapPost("/{threadId:guid}/messages/stream",
             async (
@@ -153,11 +157,11 @@ public static class ThreadEndpoints
 
                 return Results.Empty;
 
-            });
+            }).WithValidation<CreateMessageDto>();
 
     }
 
 
 }
 
-public record CreateThreadRequest(string Name);
+public record CreateThreadRequest([Required, MaxLength(NumberConstants.MaxLengthThreadName)] string Name);
