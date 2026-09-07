@@ -2,76 +2,92 @@
 using Google.Protobuf;
 using Grpc.Core;
 using Grpc.Net.Client;
+using LLM_Test.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System;
 
-var id = new Guid();
 
 AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
 
-using var channel = GrpcChannel.ForAddress("http://localhost:50051");
-var client = new Gemma4Server.Gemma4ServerClient(channel);
+var builder = WebApplication.CreateBuilder(args);
 
-var history = new History();
-history.Messages.Add(new Message { Text = "You are a helpful assistant.", Role = Roles.System });
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+    .AddEnvironmentVariables();
 
+builder.Services.AddApplication(builder.Configuration);
 
-var imageBytes = await File.ReadAllBytesAsync("testImage.jpg");
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"]
+        };
 
-var userMessage = new Message {
-    Text = "Describe the image",
-    Role = Roles.User
-};
-
-userMessage.ImageAttachment.Add(new ImageAttachment
-{
-    Data = ByteString.CopyFrom(imageBytes),
-    MimeType = "image/jpeg"
 });
 
-var request = new Request { History = history, UserMessage = userMessage };
+builder.Services.AddAuthentication();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(
+    options =>
+ {
+     options.SwaggerDoc("v1", new OpenApiInfo { Title = "AI web chat API", Version = "v1" });
+
+     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme 
+     {
+         Name = "Authorization",
+         Type = SecuritySchemeType.Http,
+         Scheme = "bearer",
+         BearerFormat = "JWT",
+         In = ParameterLocation.Header,
+         Description = "Enter your JWT token"
+     });
+
+     options.AddSecurityRequirement(
+         new OpenApiSecurityRequirement
+         {
+             {
+             new OpenApiSecurityScheme
+             {
+                 Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+             },
+             Array.Empty<string>()
+
+         }
+         });
+
+});
 
 
-Console.WriteLine("First Request");
+var app = builder.Build();
 
-try
+app.UseAuthentication();
+
+app.UseAuthorization();
+
+app.MapApplicationEndpoints();
+
+if (app.Environment.IsDevelopment()) 
 {
-    var response = client.MakeRequest(request);
-    Console.WriteLine($"Thoughts: {response.Thoughts}");
-
-    Console.WriteLine($"answer: {response.Answer}");
-}
-catch (Grpc.Core.RpcException ex)
-{
-    Console.WriteLine($"gRPC call failed: {ex.Status}");
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-
-Console.WriteLine("Second Request");
-
-try
-{
-    using var call = client.MakeRequestStreamBackTokenByToken(request);
-    await foreach (var chunk in call.ResponseStream.ReadAllAsync()) 
-    {
-        Console.Write(chunk.Answer);
-    }
-}
-catch (Grpc.Core.RpcException ex)
-{
-    Console.WriteLine($"gRPC call failed: {ex.Status}");
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+app.Run();
