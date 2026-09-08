@@ -31,7 +31,7 @@ public static class AuthEnpoints
             }
         });
 
-        group.Map("/login", async (LoginUserDto dto, IAuthService service, CancellationToken cancellationToken) =>
+        group.MapPost("/login", async (LoginUserDto dto, IAuthService service, CancellationToken cancellationToken) =>
         {
             try
             {
