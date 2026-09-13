@@ -94,7 +94,9 @@ public static class ThreadEndpoints
                     UserId = user.GetUserId()
                 }, cancellationToken);
 
-                return Results.Ok(newMessage.ToGetDto());
+                var response = new AddMessageResponse(newMessage.Id, newMessage.ToGetDto());
+
+                return Results.Ok(response);
             }
             catch (Exception ex)
             {
@@ -165,3 +167,5 @@ public static class ThreadEndpoints
 }
 
 public record CreateThreadRequest([Required, MaxLength(NumberConstants.MaxLengthThreadName)] string Name);
+
+public record AddMessageResponse(Guid UserMessageId, GetMessageDto MessageDto);

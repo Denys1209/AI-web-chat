@@ -53,12 +53,10 @@ public class ThreadService : IThreadService
 
 
         await _db.Messages.AddAsync(message);
+        thread.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
 
         return (thread, history, message);
-
-
-
 
     }
 
@@ -78,7 +76,6 @@ public class ThreadService : IThreadService
         };
 
         await _db.Threads.AddAsync(thread, cancellationToken);
-
         await _db.SaveChangesAsync(cancellationToken);
 
         return thread.Id;
@@ -102,7 +99,7 @@ public class ThreadService : IThreadService
     }
     public async Task<ICollection<GetThreadDto>> GetAllThreadsForUser(Guid userId, CancellationToken cancellationToken)
     {
-        var threads = await _db.Threads.Where(t => t.User.Id == userId)
+        var threads = await _db.Threads.Where(t => t.User.Id == userId).OrderByDescending(t => t.UpdatedAt)
             .Select(t => t.ToGetDto()).ToListAsync(cancellationToken);
 
         return threads;
@@ -129,7 +126,7 @@ public class ThreadService : IThreadService
 
     public async Task SaveMessageAsync(Message message, CancellationToken cancellationToken)
     {
-        _db.Messages.Update(message);
+        await _db.Messages.AddAsync(message);
         await _db.SaveChangesAsync(cancellationToken);
     }
 }
