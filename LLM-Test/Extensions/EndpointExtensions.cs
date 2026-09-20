@@ -8,6 +8,7 @@ public static class EndpointExtensions
     public static void MapApplicationEndpoints(this IEndpointRouteBuilder app) 
     {
         app.MapAuthEndpoints();
+        app.MapImageEndpoints();
         app.MapThreadEndpoints();
     }
 }

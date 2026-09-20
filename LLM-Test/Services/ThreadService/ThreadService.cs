@@ -107,7 +107,7 @@ public class ThreadService : IThreadService
 
     public async Task<ICollection<GetMessageDto>> GetAllMessagesForThreadOrderedByCreatedAt(Guid threadId, CancellationToken cancellationToken)
     {
-        var messages = await _db.Messages.Where(m => m.Thread.Id == threadId)
+        var messages = await _db.Messages.Include(i => i.ImageAttacheds).Where(m => m.Thread.Id == threadId)
             .OrderBy(m => m.CreatedAt)
             .Select(m => m.ToGetDto()).ToListAsync(cancellationToken);
 

@@ -1,5 +1,6 @@
 ﻿using LLM_Test.Data.Entities;
 using LLM_Test.Dtos.ImageAttachmented;
+using LLM_Test.Dtos.ImageAttachmenteds;
 
 namespace LLM_Test.Dtos.Messages;
 
@@ -10,7 +11,7 @@ public static class MessageMappingExtensions
         return new GetMessageDto()
         {
             Id = message.Id,
-            ImageAttachments = new List<GetImageAttachmentDto>(),
+            ImageAttachments = message.ImageAttacheds.ToGetDtoList(),
             Role = message.Role,
             Text = message.Text,
             Thoughts = message.Thoughts
