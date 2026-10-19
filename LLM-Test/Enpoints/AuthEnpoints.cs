@@ -1,4 +1,5 @@
 ﻿using LLM_Test.Dtos.Users;
+using LLM_Test.Extensions;
 using LLM_Test.Services.AuthService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -29,7 +30,7 @@ public static class AuthEnpoints
             {
                 return Results.BadRequest(ex.Message);
             }
-        });
+        }).WithValidation<RegisterUserDto>();
 
         group.MapPost("/login", async (LoginUserDto dto, IAuthService service, CancellationToken cancellationToken) =>
         {
@@ -47,6 +48,7 @@ public static class AuthEnpoints
             {
                 return Results.BadRequest(ex.Message);
             }
-        });
+        }).WithValidation<LoginUserDto>();
+            
     }
 }

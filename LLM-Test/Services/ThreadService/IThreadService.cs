@@ -28,4 +28,6 @@ public interface IThreadService
     public Task<ICollection<GetMessageDto>> GetAllMessagesForThreadOrderedByCreatedAtAsync(Guid threadId, CancellationToken cancellationToken);
 
     public Task<bool> CheckIfTheThreadBelongsToUser(Guid threadId, Guid userId, CancellationToken cancellationToken);
+
+    public Task SaveMessageAsync(Message message, CancellationToken cancellationToken);
 }

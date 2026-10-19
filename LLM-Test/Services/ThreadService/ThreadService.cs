@@ -1,4 +1,5 @@
-﻿using LLM_Test.Data;
+﻿using Grpc.Net.Client.Balancer;
+using LLM_Test.Data;
 using LLM_Test.Data.Entities;
 using LLM_Test.Dtos.Messages;
 using LLM_Test.Dtos.Threads;
@@ -131,4 +132,11 @@ public class ThreadService : IThreadService
         return await _db.Threads.FirstOrDefaultAsync(t => t.Id == id, cancellationToken) ?? throw new InvalidOperationException($"Thread with this id doesn't exist {id}");
     }
 
-   }
+    
+
+    public async Task SaveMessageAsync(Message message, CancellationToken cancellationToken)
+    {
+        await _db.Messages.AddAsync(message);
+        await _db.SaveChangesAsync(cancellationToken);
+    }
+}

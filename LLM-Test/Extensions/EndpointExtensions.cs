@@ -9,6 +9,7 @@ public static class EndpointExtensions
     {
         app.MapAuthEnpoints();
         app.MapThreadEndpoints();
+        app.MapImageEndpoints();
 
     }
 }

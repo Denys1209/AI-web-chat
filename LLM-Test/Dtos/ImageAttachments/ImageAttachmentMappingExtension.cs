@@ -10,7 +10,7 @@ public static class ImageAttachmentMappingExtension
         return new GetImageAttachmentDto
         {
             Id = image.Id,
-            Url = $"/images/{image.Path}",
+            Url = $"api/image/{image.Id}",
             MimeType = image.Type
         };
     }

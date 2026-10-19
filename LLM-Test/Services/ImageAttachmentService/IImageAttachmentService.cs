@@ -9,4 +9,6 @@ public interface IImageAttachmentService
 
     public Task DeleteAsync(ImageAttached image, CancellationToken cancellationToken);
 
+    public Task<ImageAttached> GetAsync(Guid id, CancellationToken cancellationToken);
+
 }

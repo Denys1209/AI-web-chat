@@ -1,4 +1,7 @@
-﻿using LLM_Test.Dtos.Messages;
+﻿using Chat;
+using LLM_Test.Constants;
+using LLM_Test.Data.Entities;
+using LLM_Test.Dtos.Messages;
 using LLM_Test.Dtos.Threads;
 using LLM_Test.Extensions;
 using LLM_Test.Services.GrpcChatService;
@@ -7,10 +10,19 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using System.Collections.Immutable;
+using System.ComponentModel.DataAnnotations;
+using System.Net.Http;
 using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks.Dataflow;
+
+
 
 namespace LLM_Test.Enpoints;
 
+using Message = Data.Entities.Message;
 public static class ThreadEndpoints
 {
     public static void MapThreadEndpoints(this IEndpointRouteBuilder app) 
@@ -33,7 +45,7 @@ public static class ThreadEndpoints
 
             return Results.Created($"/api/threads/{id}", new { Id = id });
         }
-        );
+        ).WithValidation<CreateThreadRequest>();
 
         group.MapGet("/{threadId:guid}", async (Guid threadId,
             ClaimsPrincipal user,
@@ -107,7 +119,53 @@ public static class ThreadEndpoints
 
                 return Results.BadRequest(ex.Message);
             }
-        });
+        }).WithValidation<CreateMessageDto>();
+
+        group.MapPost("/{threadId:guid}/messages/stream", async (
+              Guid threadId,
+            CreateMessageDto request,
+            ClaimsPrincipal user,
+            IThreadService threadService,
+            IChatGrpcService chatGrpcService,
+            HttpContext httpContext,
+            CancellationToken cancellationToken) =>
+        {
+            if (!await threadService.CheckIfTheThreadBelongsToUser(threadId, user.GetUserId(), cancellationToken) || user.GetUserId() != request.UserId ) 
+            {
+                return Results.Forbid();
+            }
+
+            var (thread, history, userMessage) = await threadService.AddMessageToThreadAsync(threadId, request, cancellationToken);
+
+            httpContext.Response.Headers.ContentType = "text/event-stream";
+            httpContext.Response.Headers.CacheControl = "no-cache";
+            httpContext.Response.Headers.Connection = "keep-alive";
+
+            var fullReply = new StringBuilder();
+
+            try
+            {
+                await foreach (var token in chatGrpcService.MakeRequestReturnTokenByToken(history.ToImmutableList(), userMessage, cancellationToken))
+                {
+                    fullReply.Append(token);
+                    var frame = JsonSerializer.Serialize(new { token });
+                    await httpContext.Response.WriteAsync($"data: {frame}\n\n", cancellationToken);
+                    await httpContext.Response.Body.FlushAsync(cancellationToken);
+                }
+            }
+            finally 
+            {
+                var assistantMessage = new Message()
+                {
+                    Text = fullReply.ToString(),
+                    Thread = thread,
+                    Role = Roles.Assistant,
+                };
+                await threadService.SaveMessageAsync(assistantMessage, cancellationToken);
+            }
+           
+            return Results.Empty;
+        }).WithValidation<CreateMessageDto>();
 
 
     }
@@ -115,5 +173,5 @@ public static class ThreadEndpoints
 
 public record CreateThreadRequest() 
 {
-    public required string Name { get; init; }
+    [MaxLength(NumberConstants.MaxLengthTheadName)] public  required string Name { get; init; }
 }
