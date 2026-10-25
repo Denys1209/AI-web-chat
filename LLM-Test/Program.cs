@@ -25,6 +25,18 @@ builder.Configuration
 
 builder.Services.AddApplication(builder.Configuration);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+       .AllowAnyHeader()
+       .AllowAnyMethod();
+
+    });
+
+});
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -77,6 +89,8 @@ builder.Services.AddSwaggerGen(
 
 
 var app = builder.Build();
+
+app.UseCors("Frontend");
 
 app.UseAuthentication();
 
