@@ -12,7 +12,7 @@ public static class MessageMappingExtension
         return new GetMessageDto
         {
             Id = message.Id,
-            ImageAttachmentDtos = message.ImageAttacheds.ToGetDtoList(),
+            ImageAttachments = message.ImageAttacheds.ToGetDtoList(),
             Role = message.Role,
             Text = message.Text,
             Thoughts = message.Thoughts,

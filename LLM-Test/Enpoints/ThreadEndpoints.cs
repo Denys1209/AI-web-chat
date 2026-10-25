@@ -111,7 +111,7 @@ public static class ThreadEndpoints
                 }, cancellationToken);
 
 
-                return Results.Ok(responseMessage);
+                return Results.Ok(responseMessage.ToGetDto());
 
             }
             catch (Exception ex)

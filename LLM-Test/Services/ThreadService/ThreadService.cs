@@ -37,6 +37,7 @@ public class ThreadService : IThreadService
         var history = thread.Messages.OrderBy(m => m.CreatedAt).ToList();
 
 
+
         var message = new Message
         {
             Text = createMessageDto.Text,
@@ -50,6 +51,8 @@ public class ThreadService : IThreadService
             var imageAttachment = await _imageAttachmentService.CreateAsync(imageAttachmentDto, message, cancellationToken);
             message.ImageAttacheds.Add(imageAttachment);
         }
+
+        thread.UpdatedAt = DateTime.UtcNow;
 
         await _db.Messages.AddAsync(message);
         await _db.SaveChangesAsync();
@@ -124,7 +127,7 @@ public class ThreadService : IThreadService
             throw new InvalidOperationException($"User with this Id doesn't exist {userId}");
 
 
-        return await _db.Threads.Where(t => t.User.Id == userId).Select(t => t.ToGetDto()).ToListAsync(cancellationToken);
+        return await _db.Threads.Where(t => t.User.Id == userId).OrderBy(t => t.UpdatedAt).Select(t => t.ToGetDto()).ToListAsync(cancellationToken);
     }
 
     public async Task<Thread> GetThreadAsync(Guid id, CancellationToken cancellationToken)
@@ -136,6 +139,9 @@ public class ThreadService : IThreadService
 
     public async Task SaveMessageAsync(Message message, CancellationToken cancellationToken)
     {
+        var thread = await _db.Threads.FirstOrDefaultAsync(t => t.Id == message.Thread.Id, cancellationToken);
+        thread.UpdatedAt = DateTime.UtcNow;
+
         await _db.Messages.AddAsync(message);
         await _db.SaveChangesAsync(cancellationToken);
     }

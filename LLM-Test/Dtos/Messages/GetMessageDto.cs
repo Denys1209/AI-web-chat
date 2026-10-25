@@ -13,5 +13,5 @@ public record GetMessageDto
 
     public required Roles Role { get; init; } 
 
-    public required ICollection<GetImageAttachmentDto> ImageAttachmentDtos { get; init; }
+    public required ICollection<GetImageAttachmentDto> ImageAttachments { get; init; }
 }
