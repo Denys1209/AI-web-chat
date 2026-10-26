@@ -32,7 +32,7 @@ flowchart LR
 
 | Part | Folder | Role |
 |---|---|---|
-| Web interface | _(add your frontend folder or repo link here)_ | Login, register, chat UI, image upload |
+| Web interface | _[webPart](https://github.com/Denys1209/ai-web-chat-webPart)_ | Login, register, chat UI, image upload |
 | Web API | `LLM-Test/` | Accounts, JWT, threads, messages, image storage, talks to the model over gRPC |
 | Inference server | `GrpcPythonServer/` | Loads the model and serves it over gRPC (unary and streaming) |
 | Contract | `LLM-Test/proto/chat.proto` | Shared gRPC definition used by both servers |
